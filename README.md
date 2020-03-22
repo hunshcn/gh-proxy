@@ -5,7 +5,7 @@
 
 ## 演示
 
-[https://shrill-pond-3e81.hunsh.workers.dev/](https://shrill-pond-3e81.hunsh.workers.dev/)
+[https://gh.api.99988866.xyz/](https://gh.api.99988866.xyz/)
 
 ## 使用
 
@@ -17,7 +17,7 @@
 
 ***大量使用请自行部署，以上域名仅为演示使用。***
 
-以下都是合法输入：
+以下都是合法输入（仅示例，文件不存在）：
 
  - 分支源码：https://github.com/hunshcn/project/archive/master.zip
    
