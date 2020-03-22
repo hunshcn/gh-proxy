@@ -3,6 +3,10 @@
 
 利用Cloudflare Workers对github release、archive以及项目文件进行加速，部署无需服务器且自带cdn。
 
+## 演示
+
+[https://shrill-pond-3e81.hunsh.workers.dev/](https://shrill-pond-3e81.hunsh.workers.dev/)
+
 ## 使用
 
 直接在copy出来的url前加`https://shrill-pond-3e81.hunsh.workers.dev/`即可
