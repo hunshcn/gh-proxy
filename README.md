@@ -1,7 +1,7 @@
 # gh-proxy
 ## 简介
 
-利用Cloudflare Workers对github release、archive以及项目文件进行加速，部署无需服务器且自带cdn。
+利用Cloudflare Workers对github release、archive以及项目文件进行加速，并且支持clone，部署无需服务器且自带cdn。
 
 ## 演示
 
@@ -29,19 +29,26 @@
 
  - commit文件：https://github.com/hunshcn/project/blob/1111111111111111111111111111/filename
 
-## 部署
+## 自行部署
 
 首页：https://workers.cloudflare.com
 
 注册，登陆，`Start building`，取一个子域名，`Create a Worker`。
 
-复制 [index.js](https://cdn.jsdeliver.net/hunshcn/gh-proxy@master/index.js) 到左侧代码框，`Save and deploy`。如果正常，右侧应显示首页。
+复制 [index.js](https://cdn.jsdeliver.net/hunshcn/gh-proxy@master/index.js) 或 [index2.js](https://cdn.jsdeliver.net/hunshcn/gh-proxy@master/index2.js) 到左侧代码框，`Save and deploy`。如果正常，右侧应显示首页。
+
+`index.js`的clone走github.com.cnpmjs.org，`index2.js`的clone走你的cf worker，请自行选择
 
 ## 计费
 
 到 `overview` 页面可参看使用情况。免费版每天有 10 万次免费请求，并且有每分钟1000次请求的限制。
 
 如果不够用，可升级到 $5 的高级版本，每月可用 1000 万次请求（超出部分 $0.5/百万次请求）。
+
+## Changelog
+
+2020.03.22 初始版本
+2020.03.23 新增了clone的支持
 
 ## 链接
 
