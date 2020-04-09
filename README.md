@@ -57,6 +57,7 @@ docker run -d --name="gh-proxy-py" \
 
 ### 注意
 
+python版本的机器如果无法正常访问github.io会启动报错，请自行修改静态文件url
 默认配置下clone走github.com.cnpmjs.org，项目文件会走jsDeliver，如需走worker，修改配置即可
 
 ## Cloudflare Workers计费
