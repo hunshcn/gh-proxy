@@ -4,6 +4,11 @@
  * static files (404.html, sw.js, conf.js)
  */
 const ASSET_URL = 'https://hunshcn.github.io/gh-proxy'
+// git使用cnpmjs镜像、分支文件使用jsDelivr镜像的开关，0为关闭，默认开启
+const Config = {
+    jsdelivr: 1,
+    cnpmjs: 1
+}
 
 /** @type {RequestInit} */
 const PREFLIGHT_INIT = {
@@ -62,7 +67,7 @@ async function fetchHandler(e) {
     const exp = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:releases|archive)\/.*$/
     const exp2 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:blob)\/.*$/
     const exp3 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-upload-pack).*$/
-    if (path.search(exp)===0) {
+    if (path.search(exp)===0 || !Config.jsdelivr && path.search(exp2)===0 || !Config.cnpmjs && path.search(exp3)===0) {
         return httpHandler(req, path)
     }else if(path.search(exp2)===0) {
         const newUrl = path.replace('/blob/', '@').replace(/^(?:https?:\/\/)?github\.com/, 'https://cdn.jsdelivr.net/gh')
