@@ -27,7 +27,7 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 
  - commit文件：https://github.com/hunshcn/project/blob/1111111111111111111111111111/filename
 
-## cf worker版本自行部署
+## cf worker版本部署
 
 首页：https://workers.cloudflare.com
 
@@ -58,7 +58,7 @@ docker run -d --name="gh-proxy-py" \
 ### 注意
 
 python版本的机器如果无法正常访问github.io会启动报错，请自行修改静态文件url
-默认配置下clone走github.com.cnpmjs.org，项目文件会走jsDeliver，如需走worker，修改配置即可
+默认配置下clone走github.com.cnpmjs.org，项目文件会走jsDeliver，如需走服务器，修改配置即可
 
 ## Cloudflare Workers计费
 
@@ -68,9 +68,9 @@ python版本的机器如果无法正常访问github.io会启动报错，请自�
 
 ## Changelog
 
-2020.04.09 增加Python版本（使用Flask）
-2020.03.23 新增了clone的支持
-2020.03.22 初始版本
+* 2020.04.09 增加Python版本（使用Flask）
+* 2020.03.23 新增了clone的支持
+* 2020.03.22 初始版本
 
 ## 链接
 
