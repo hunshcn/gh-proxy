@@ -16,9 +16,10 @@ app = Flask(__name__)
 app.debug = True
 CHUNK_SIZE = 1024 * 10
 index_html = requests.get(ASSET_URL, timeout=10).text
-exp1 = re.compile(r'^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:releases|archive)\/.*$')
-exp2 = re.compile(r'^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:blob)\/.*$')
-exp3 = re.compile(r'^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-upload-pack).*$')
+exp1 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:releases|archive)/.*$')
+exp2 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:blob)/.*$')
+exp3 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:info|git-upload-pack).*$')
+exp4 = re.compile(r'^(?:https?://)?raw\.githubusercontent\.com/.+?/.+?/.+?/.+$')
 
 
 @app.route('/')
@@ -38,7 +39,10 @@ def proxy(u):
     elif cnpmjs and exp3.match(u):
         u = u.replace('github.com', 'github.com.cnpmjs.org') + request.url.replace(request.base_url, '')
         return redirect(u)
-    # elif exp1.match(u):
+    elif jsdelivr and exp4.match(u):
+        u = re.sub(r'\.com/.*?/.+?/(.+?/)', '@$1', u, 1)
+        u = u.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh')
+        return redirect(u)
     else:
         headers = {}
         r_headers = {}
@@ -46,7 +50,7 @@ def proxy(u):
             if i in request.headers:
                 r_headers[i] = request.headers.get(i)
         try:
-            r = requests.get(u, headers=r_headers, stream=True)
+            r = requests.get(u + request.url.replace(request.base_url, ''), headers=r_headers, stream=True)
             for i in ['Content-Type']:
                 if i in r.headers:
                     headers[i] = r.headers.get(i)
