@@ -58,22 +58,25 @@ async function fetchHandler(e) {
     const urlStr = req.url
     const urlObj = new URL(urlStr)
     let path = urlObj.searchParams.get('q')
-    if(path)
-    {
+    if (path) {
         return Response.redirect('https://' + urlObj.host + '/' + path, 301)
     }
     // cfworker 会把路径中的 `//` 合并成 `/`
     path = urlObj.href.substr(urlObj.origin.length + 1).replace(/^https?:\/+/, 'https://')
-    const exp = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:releases|archive)\/.*$/
+    const exp1 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:releases|archive)\/.*$/
     const exp2 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:blob)\/.*$/
     const exp3 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-upload-pack).*$/
-    if (path.search(exp)===0 || !Config.jsdelivr && path.search(exp2)===0 || !Config.cnpmjs && path.search(exp3)===0) {
+    const exp4 = /^(?:https?:\/\/)?raw\.githubusercontent\.com\/.+?\/.+?\/.+?\/.+$/
+    if (path.search(exp1) === 0 || !Config.jsdelivr && path.search(exp2) === 0 || !Config.cnpmjs && (path.search(exp3) === 0 || path.search(exp4))) {
         return httpHandler(req, path)
-    }else if(path.search(exp2)===0) {
+    } else if (path.search(exp2) === 0) {
         const newUrl = path.replace('/blob/', '@').replace(/^(?:https?:\/\/)?github\.com/, 'https://cdn.jsdelivr.net/gh')
         return Response.redirect(newUrl, 302)
-    }else if (path.search(exp3)===0){
+    } else if (path.search(exp3) === 0) {
         const newUrl = path.replace(/^(?:https?:\/\/)?github\.com/, 'https://github.com.cnpmjs.org')
+        return Response.redirect(newUrl, 302)
+    } else if (path.search(exp4) === 0) {
+        const newUrl = path.replace(/(?<=com\/.+?\/.+?)\/(.+?\/)/, '@$1').replace(/^(?:https?:\/\/)?raw\.githubusercontent\.com/, 'https://cdn.jsdelivr.net/gh')
         return Response.redirect(newUrl, 302)
     } else {
         return fetch(ASSET_URL + path)

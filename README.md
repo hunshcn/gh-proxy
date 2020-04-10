@@ -68,6 +68,7 @@ python版本的机器如果无法正常访问github.io会启动报错，请自�
 
 ## Changelog
 
+* 2020.04.10 增加对`raw.githubusercontent.com`文件的支持
 * 2020.04.09 增加Python版本（使用Flask）
 * 2020.03.23 新增了clone的支持
 * 2020.03.22 初始版本
