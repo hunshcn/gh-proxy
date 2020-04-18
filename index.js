@@ -4,6 +4,8 @@
  * static files (404.html, sw.js, conf.js)
  */
 const ASSET_URL = 'https://hunshcn.github.io/gh-proxy'
+// 前缀，如果自定义路由为example.com/gh/*，将PREFIX改为 '/gh/'，注意，少一个杠都会错！
+const PREFIX = '/'
 // git使用cnpmjs镜像、分支文件使用jsDelivr镜像的开关，0为关闭，默认开启
 const Config = {
     jsdelivr: 1,
@@ -59,10 +61,10 @@ async function fetchHandler(e) {
     const urlObj = new URL(urlStr)
     let path = urlObj.searchParams.get('q')
     if (path) {
-        return Response.redirect('https://' + urlObj.host + '/' + path, 301)
+        return Response.redirect('https://' + urlObj.host + PREFIX + path, 301)
     }
     // cfworker 会把路径中的 `//` 合并成 `/`
-    path = urlObj.href.substr(urlObj.origin.length + 1).replace(/^https?:\/+/, 'https://')
+    path = urlObj.href.substr(urlObj.origin.length + PREFIX.length).replace(/^https?:\/+/, 'https://')
     const exp1 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:releases|archive)\/.*$/
     const exp2 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:blob)\/.*$/
     const exp3 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-upload-pack).*$/
@@ -101,8 +103,6 @@ function httpHandler(req, pathname) {
     let rawLen = ''
 
     const reqHdrNew = new Headers(reqHdrRaw)
-
-    const refer = reqHdrNew.get('referer')
 
     let urlStr = pathname
     if (urlStr.startsWith('github')) {
