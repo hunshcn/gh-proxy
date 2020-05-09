@@ -29,7 +29,7 @@ def index():
     return index_html
 
 
-@app.route('/<path:u>')
+@app.route('/<path:u>', methods=['GET', 'POST'])
 def proxy(u):
     u = u if u.startswith('http') else 'https://' + u
     u = u.replace(':/g', '://g', 1)  # uwsgi会将//传递为/
@@ -50,12 +50,16 @@ def proxy(u):
             if i in request.headers:
                 r_headers[i] = request.headers.get(i)
         try:
-            r = requests.get(u + request.url.replace(request.base_url, ''), headers=r_headers, stream=True)
+            r = requests.request(method=request.method, url=u + request.url.replace(request.base_url, ''), data=request.data, headers=r_headers, stream=True)
             for i in ['Content-Type']:
                 if i in r.headers:
                     headers[i] = r.headers.get(i)
             if r.status_code == 200:
                 headers = dict(r.headers)
+            try:
+                headers.pop('Transfer-Encoding')
+            except:
+                pass
 
             def generate():
                 for chunk in r.iter_content(chunk_size=CHUNK_SIZE):
