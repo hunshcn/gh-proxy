@@ -69,11 +69,16 @@ async function fetchHandler(e) {
     const exp2 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:blob)\/.*$/i
     const exp3 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-upload-pack).*$/i
     const exp4 = /^(?:https?:\/\/)?raw\.githubusercontent\.com\/.+?\/.+?\/.+?\/.+$/i
-    if (path.search(exp1) === 0 || !Config.jsdelivr && path.search(exp2) === 0 || !Config.cnpmjs && (path.search(exp3) === 0 || path.search(exp4))) {
+    if (path.search(exp1) === 0 || !Config.cnpmjs && (path.search(exp3) === 0 || path.search(exp4))) {
         return httpHandler(req, path)
     } else if (path.search(exp2) === 0) {
-        const newUrl = path.replace('/blob/', '@').replace(/^(?:https?:\/\/)?github\.com/, 'https://cdn.jsdelivr.net/gh')
-        return Response.redirect(newUrl, 302)
+        if (Config.jsdelivr){
+            const newUrl = path.replace('/blob/', '@').replace(/^(?:https?:\/\/)?github\.com/, 'https://cdn.jsdelivr.net/gh')
+            return Response.redirect(newUrl, 302)
+        }else{
+            path = path.replace('/blob/', '/raw/')
+            return httpHandler(req, path)
+        }
     } else if (path.search(exp3) === 0) {
         const newUrl = path.replace(/^(?:https?:\/\/)?github\.com/, 'https://github.com.cnpmjs.org')
         return Response.redirect(newUrl, 302)

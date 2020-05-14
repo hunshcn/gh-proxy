@@ -34,23 +34,25 @@ def proxy(u):
     u = u if u.startswith('http') else 'https://' + u
     u = u.replace(':/g', '://g', 1)  # uwsgi会将//传递为/
     if jsdelivr and exp2.match(u):
-        u = u.replace('/blob/', '@').replace('github.com', 'cdn.jsdelivr.net/gh')
+        u = u.replace('/blob/', '@', 1).replace('github.com', 'cdn.jsdelivr.net/gh', 1)
         return redirect(u)
     elif cnpmjs and exp3.match(u):
-        u = u.replace('github.com', 'github.com.cnpmjs.org') + request.url.replace(request.base_url, '')
+        u = u.replace('github.com', 'github.com.cnpmjs.org', 1) + request.url.replace(request.base_url, '', 1)
         return redirect(u)
     elif jsdelivr and exp4.match(u):
         u = re.sub(r'\.com/.*?/.+?/(.+?/)', '@$1', u, 1)
-        u = u.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh')
+        u = u.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh', 1)
         return redirect(u)
     else:
+        if exp2.match(u):
+            u = u.replace('/blob/', '/raw/', 1)
         headers = {}
         r_headers = {}
         for i in ['Range', 'User-Agent']:
             if i in request.headers:
                 r_headers[i] = request.headers.get(i)
         try:
-            r = requests.request(method=request.method, url=u + request.url.replace(request.base_url, ''), data=request.data, headers=r_headers, stream=True)
+            r = requests.request(method=request.method, url=u + request.url.replace(request.base_url, '', 1), data=request.data, headers=r_headers, stream=True)
             for i in ['Content-Type']:
                 if i in r.headers:
                     headers[i] = r.headers.get(i)
