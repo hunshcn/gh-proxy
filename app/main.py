@@ -8,12 +8,12 @@ from flask import Flask, Response, redirect, request
 # git使用cnpmjs镜像、分支文件使用jsDelivr镜像的开关，0为关闭，默认开启
 jsdelivr = 1
 cnpmjs = 1
+size_limit = 1024 * 1024 * 1024 * 999  # 允许的文件大小，默认999GB，相当于无限制了 https://github.com/hunshcn/gh-proxy/issues/8
 HOST = '127.0.0.1'  # 监听地址，建议监听本地然后由web服务器反代
 PORT = 80  # 监听端口
 ASSET_URL = 'https://hunshcn.github.io/gh-proxy'  # 主页
 
 app = Flask(__name__)
-app.debug = True
 CHUNK_SIZE = 1024 * 10
 index_html = requests.get(ASSET_URL, timeout=10).text
 exp1 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:releases|archive)/.*$')
@@ -60,8 +60,11 @@ def proxy(u):
                 headers = dict(r.headers)
             try:
                 headers.pop('Transfer-Encoding')
-            except:
+            except KeyError:
                 pass
+
+            if int(r.headers['Content-length']) > size_limit:
+                return redirect(u + request.url.replace(request.base_url, '', 1))
 
             def generate():
                 for chunk in r.iter_content(chunk_size=CHUNK_SIZE):
@@ -70,7 +73,7 @@ def proxy(u):
             return Response(generate(), headers=headers, status=r.status_code)
         except Exception as e:
             headers['content-type'] = 'text/html; charset=UTF-8'
-            return Response('server error' + str(e), status=500, headers=headers)
+            return Response('server error ' + str(e), status=500, headers=headers)
     # else:
     #     return Response('Illegal input', status=403, mimetype='text/html; charset=UTF-8')
 
