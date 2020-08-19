@@ -40,7 +40,7 @@ def proxy(u):
         u = u.replace('github.com', 'github.com.cnpmjs.org', 1) + request.url.replace(request.base_url, '', 1)
         return redirect(u)
     elif jsdelivr and exp4.match(u):
-        u = re.sub(r'\.com/.*?/.+?/(.+?/)', '@$1', u, 1)
+        u = re.sub(r'(\.com/.*?/.+?)/(.+?/)', r'\1@\2', u, 1)
         u = u.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh', 1)
         return redirect(u)
     else:
@@ -63,7 +63,7 @@ def proxy(u):
             except KeyError:
                 pass
 
-            if int(r.headers['Content-length']) > size_limit:
+            if 'Content-length' in r.headers and int(r.headers['Content-length']) > size_limit:
                 return redirect(u + request.url.replace(request.base_url, '', 1))
 
             def generate():
