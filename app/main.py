@@ -52,7 +52,10 @@ def proxy(u):
             if i in request.headers:
                 r_headers[i] = request.headers.get(i)
         try:
-            r = requests.request(method=request.method, url=u + request.url.replace(request.base_url, '', 1), data=request.data, headers=r_headers, stream=True)
+            url = u + request.url.replace(request.base_url, '', 1)
+            if url.startswith('https:/') and not url.startswith('https://'):
+                url = 'https://' + url[7:]
+            r = requests.request(method=request.method, url=url, data=request.data, headers=r_headers, stream=True)
             for i in ['Content-Type']:
                 if i in r.headers:
                     headers[i] = r.headers.get(i)
