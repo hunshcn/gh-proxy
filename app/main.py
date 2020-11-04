@@ -56,7 +56,7 @@ def proxy(u):
             if url.startswith('https:/') and not url.startswith('https://'):
                 url = 'https://' + url[7:]
             r = requests.request(method=request.method, url=url, data=request.data, headers=r_headers, stream=True)
-            for i in ['Content-Type']:
+            for i in ['Content-Range', 'Content-Type']:
                 if i in r.headers:
                     headers[i] = r.headers.get(i)
             if r.status_code == 200:
