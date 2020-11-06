@@ -100,6 +100,7 @@ def proxy(u):
         for i in ['Range', 'User-Agent']:
             if i in request.headers:
                 r_headers[i] = request.headers.get(i)
+        r_headers['Accept-Encoding'] = request.headers.get('Accept-Encoding', 'identity')
         try:
             url = u + request.url.replace(request.base_url, '', 1)
             if url.startswith('https:/') and not url.startswith('https://'):
