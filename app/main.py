@@ -3,6 +3,13 @@ import re
 
 import requests
 from flask import Flask, Response, redirect, request
+from requests.exceptions import (
+    ChunkedEncodingError,
+    ContentDecodingError, ConnectionError, StreamConsumedError)
+from requests.utils import (
+    stream_decode_response_unicode, iter_slices)
+from urllib3.exceptions import (
+    DecodeError, ReadTimeoutError, ProtocolError)
 
 # config
 # git使用cnpmjs镜像、分支文件使用jsDelivr镜像的开关，0为关闭，默认开启
@@ -27,6 +34,48 @@ def index():
     if 'q' in request.args:
         return redirect('/' + request.args.get('q'))
     return index_html
+
+
+def iter_content(self, chunk_size=1, decode_unicode=False):
+    """rewrite requests function, set decode_content with False"""
+
+    def generate():
+        # Special case for urllib3.
+        if hasattr(self.raw, 'stream'):
+            try:
+                for chunk in self.raw.stream(chunk_size, decode_content=False):
+                    yield chunk
+            except ProtocolError as e:
+                raise ChunkedEncodingError(e)
+            except DecodeError as e:
+                raise ContentDecodingError(e)
+            except ReadTimeoutError as e:
+                raise ConnectionError(e)
+        else:
+            # Standard file-like object.
+            while True:
+                chunk = self.raw.read(chunk_size)
+                if not chunk:
+                    break
+                yield chunk
+
+        self._content_consumed = True
+
+    if self._content_consumed and isinstance(self._content, bool):
+        raise StreamConsumedError()
+    elif chunk_size is not None and not isinstance(chunk_size, int):
+        raise TypeError("chunk_size must be an int, it is instead a %s." % type(chunk_size))
+    # simulate reading small chunks of the content
+    reused_chunks = iter_slices(self._content, chunk_size)
+
+    stream_chunks = generate()
+
+    chunks = reused_chunks if self._content_consumed else stream_chunks
+
+    if decode_unicode:
+        chunks = stream_decode_response_unicode(chunks, self)
+
+    return chunks
 
 
 @app.route('/<path:u>', methods=['GET', 'POST'])
@@ -70,7 +119,7 @@ def proxy(u):
                 return redirect(u + request.url.replace(request.base_url, '', 1))
 
             def generate():
-                for chunk in r.iter_content(chunk_size=CHUNK_SIZE):
+                for chunk in iter_content(r, chunk_size=CHUNK_SIZE):
                     yield chunk
 
             return Response(generate(), headers=headers, status=r.status_code)
