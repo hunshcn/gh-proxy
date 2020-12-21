@@ -97,7 +97,7 @@ def proxy(u):
             u = u.replace('/blob/', '/raw/', 1)
         headers = {}
         r_headers = {}
-        for i in ['Range', 'User-Agent']:
+        for i in ['Range', 'User-Agent', 'Accept', 'Content-Type', 'Content-Length', 'Content-Encoding']:
             if i in request.headers:
                 r_headers[i] = request.headers.get(i)
         r_headers['Accept-Encoding'] = request.headers.get('Accept-Encoding', 'identity')
