@@ -27,7 +27,7 @@ exp1 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:releases|archive)/.*$'
 exp2 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:blob)/.*$')
 exp3 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:info|git-).*$')
 exp4 = re.compile(r'^(?:https?://)?raw\.githubusercontent\.com/.+?/.+?/.+?/.+$')
-exp5 = re.compile(r'^(?:https?://)?gist\.githubusercontent\.com/.+?/.+?/.+$')
+exp5 = re.compile(r'^(?:https?://)?gist\.(?:githubusercontent|github)\.com/.+?/.+?/.+$')
 
 
 @app.route('/')
