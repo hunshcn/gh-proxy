@@ -27,6 +27,7 @@ exp1 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:releases|archive)/.*$'
 exp2 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:blob)/.*$')
 exp3 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:info|git-).*$')
 exp4 = re.compile(r'^(?:https?://)?raw\.githubusercontent\.com/.+?/.+?/.+?/.+$')
+exp5 = re.compile(r'^(?:https?://)?gist\.githubusercontent\.com/.+?/.+?/.+$')
 
 
 @app.route('/')
@@ -82,6 +83,8 @@ def iter_content(self, chunk_size=1, decode_unicode=False):
 def proxy(u):
     u = u if u.startswith('http') else 'https://' + u
     u = u.replace(':/g', '://g', 1)  # uwsgi会将//传递为/
+    if not any([i.match(u) for i in [exp1, exp2, exp3, exp4, exp5]]):
+        return Response('Invalid input.', status=403)
     if jsdelivr and exp2.match(u):
         u = u.replace('/blob/', '@', 1).replace('github.com', 'cdn.jsdelivr.net/gh', 1)
         return redirect(u)
