@@ -23,6 +23,7 @@ ASSET_URL = 'https://hunshcn.github.io/gh-proxy'  # 主页
 app = Flask(__name__)
 CHUNK_SIZE = 1024 * 10
 index_html = requests.get(ASSET_URL, timeout=10).text
+icon_r = requests.get(ASSET_URL + '/favicon.ico', timeout=10).content
 exp1 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:releases|archive)/.*$')
 exp2 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:blob)/.*$')
 exp3 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:info|git-).*$')
@@ -35,6 +36,11 @@ def index():
     if 'q' in request.args:
         return redirect('/' + request.args.get('q'))
     return index_html
+
+
+@app.route('/favicon.ico')
+def icon():
+    return Response(icon_r, content_type='image/vnd.microsoft.icon')
 
 
 def iter_content(self, chunk_size=1, decode_unicode=False):
