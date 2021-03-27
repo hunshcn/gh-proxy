@@ -105,21 +105,15 @@ def proxy(u):
         if exp2.match(u):
             u = u.replace('/blob/', '/raw/', 1)
         headers = {}
-        r_headers = {}
-        for i in ['Range', 'User-Agent', 'Accept', 'Content-Type', 'Content-Encoding']:
-            if i in request.headers:
-                r_headers[i] = request.headers.get(i)
-        r_headers['Accept-Encoding'] = request.headers.get('Accept-Encoding', 'identity')
+        r_headers = dict(request.headers)
+        if 'Host' in r_headers:
+            r_headers.pop('Host')
         try:
             url = u + request.url.replace(request.base_url, '', 1)
             if url.startswith('https:/') and not url.startswith('https://'):
                 url = 'https://' + url[7:]
             r = requests.request(method=request.method, url=url, data=request.data, headers=r_headers, stream=True)
             headers = dict(r.headers)
-            try:
-                headers.pop('Transfer-Encoding')
-            except KeyError:
-                pass
 
             if 'Content-length' in r.headers and int(r.headers['Content-length']) > size_limit:
                 return redirect(u + request.url.replace(request.base_url, '', 1))
