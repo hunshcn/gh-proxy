@@ -12,9 +12,9 @@ from urllib3.exceptions import (
     DecodeError, ReadTimeoutError, ProtocolError)
 
 # config
-# git使用cnpmjs镜像、分支文件使用jsDelivr镜像的开关，0为关闭，默认开启
-jsdelivr = 1
-cnpmjs = 1
+# git使用cnpmjs镜像、分支文件使用jsDelivr镜像的开关，0为关闭，默认关闭
+jsdelivr = 0
+cnpmjs = 0
 size_limit = 1024 * 1024 * 1024 * 999  # 允许的文件大小，默认999GB，相当于无限制了 https://github.com/hunshcn/gh-proxy/issues/8
 HOST = '127.0.0.1'  # 监听地址，建议监听本地然后由web服务器反代
 PORT = 80  # 监听端口
@@ -115,11 +115,7 @@ def proxy(u):
             if url.startswith('https:/') and not url.startswith('https://'):
                 url = 'https://' + url[7:]
             r = requests.request(method=request.method, url=url, data=request.data, headers=r_headers, stream=True)
-            for i in ['Content-Range', 'Content-Type']:
-                if i in r.headers:
-                    headers[i] = r.headers.get(i)
-            if r.status_code == 200:
-                headers = dict(r.headers)
+            headers = dict(r.headers)
             try:
                 headers.pop('Transfer-Encoding')
             except KeyError:
