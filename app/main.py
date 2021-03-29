@@ -7,7 +7,7 @@ from requests.exceptions import (
     ChunkedEncodingError,
     ContentDecodingError, ConnectionError, StreamConsumedError)
 from requests.utils import (
-    stream_decode_response_unicode, iter_slices)
+    stream_decode_response_unicode, iter_slices, CaseInsensitiveDict)
 from urllib3.exceptions import (
     DecodeError, ReadTimeoutError, ProtocolError)
 
@@ -29,6 +29,8 @@ exp2 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:blob)/.*$')
 exp3 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:info|git-).*$')
 exp4 = re.compile(r'^(?:https?://)?raw\.githubusercontent\.com/.+?/.+?/.+?/.+$')
 exp5 = re.compile(r'^(?:https?://)?gist\.(?:githubusercontent|github)\.com/.+?/.+?/.+$')
+
+requests.sessions.default_headers = lambda: CaseInsensitiveDict()
 
 
 @app.route('/')
@@ -108,7 +110,6 @@ def proxy(u):
         r_headers = dict(request.headers)
         if 'Host' in r_headers:
             r_headers.pop('Host')
-        r_headers['Accept-Encoding'] = request.headers.get('Accept-Encoding', 'identity')
         try:
             url = u + request.url.replace(request.base_url, '', 1)
             if url.startswith('https:/') and not url.startswith('https://'):
