@@ -30,6 +30,8 @@ exp3 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:info|git-).*$')
 exp4 = re.compile(r'^(?:https?://)?raw\.githubusercontent\.com/.+?/.+?/.+?/.+$')
 exp5 = re.compile(r'^(?:https?://)?gist\.(?:githubusercontent|github)\.com/.+?/.+?/.+$')
 
+requests.models.PreparedRequest.prepare_headers = lambda _, __: None
+
 
 @app.route('/')
 def index():
