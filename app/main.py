@@ -108,6 +108,7 @@ def proxy(u):
         r_headers = dict(request.headers)
         if 'Host' in r_headers:
             r_headers.pop('Host')
+        r_headers['Accept-Encoding'] = request.headers.get('Accept-Encoding', 'identity')
         try:
             url = u + request.url.replace(request.base_url, '', 1)
             if url.startswith('https:/') and not url.startswith('https://'):
