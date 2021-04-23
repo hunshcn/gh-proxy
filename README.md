@@ -1,4 +1,5 @@
 # gh-proxy
+
 ## 简介
 
 github release、archive以及项目文件的加速项目，支持clone，有Cloudflare Workers无服务器版本以及Python版本
@@ -6,6 +7,12 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 ## 演示
 
 [https://gh.api.99988866.xyz/](https://gh.api.99988866.xyz/)
+
+演示站为公共服务，如有大规模使用需求请自行部署，演示站有点不堪重负
+
+![imagea272c95887343279.png](https://img.maocdn.cn/img/2021/04/24/imagea272c95887343279.png)
+
+当然也欢迎[捐赠](#捐赠)以支持作者
 
 ## python版本和cf worker版本差异
 
@@ -21,15 +28,17 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 
 以下都是合法输入（仅示例，文件不存在）：
 
- - 分支源码：https://github.com/hunshcn/project/archive/master.zip
-   
- - release源码：https://github.com/hunshcn/project/archive/v0.1.0.tar.gz
-   
- - release文件：https://github.com/hunshcn/project/releases/download/v0.1.0/example.zip
-   
- - 分支文件：https://github.com/hunshcn/project/blob/master/filename
+- 分支源码：https://github.com/hunshcn/project/archive/master.zip
 
- - commit文件：https://github.com/hunshcn/project/blob/1111111111111111111111111111/filename
+- release源码：https://github.com/hunshcn/project/archive/v0.1.0.tar.gz
+
+- release文件：https://github.com/hunshcn/project/releases/download/v0.1.0/example.zip
+
+- 分支文件：https://github.com/hunshcn/project/blob/master/filename
+
+- commit文件：https://github.com/hunshcn/project/blob/1111111111111111111111111111/filename
+
+- gist：https://gist.githubusercontent.com/cielpy/351557e6e465c12986419ac5a4dd2568/raw/cmd.py
 
 ## cf worker版本部署
 
@@ -48,15 +57,18 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 ## Python版本部署
 
 ### Docker部署
+
 ```
 docker run -d --name="gh-proxy-py" \
   -p 0.0.0.0:80:80 \
   --restart=always \
   hunsh/gh-proxy-py:latest
 ```
+
 第一个80是你要暴露出去的端口
 
 ### 直接部署
+
 安装依赖（请使用python3）
 
 ```pip install flask requests```
@@ -91,3 +103,8 @@ python版本默认走服务器（2021.3.27更新）
 ## 参考
 
 [jsproxy](https://github.com/EtherDream/jsproxy/)
+
+## 捐赠
+
+![wx.png](https://img.maocdn.cn/img/2021/04/24/image.md.png)
+![ali.png](https://www.helloimg.com/images/2021/04/24/BK9vmb.md.png)
