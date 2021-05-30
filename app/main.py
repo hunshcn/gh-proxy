@@ -90,7 +90,8 @@ def iter_content(self, chunk_size=1, decode_unicode=False):
 @app.route('/<path:u>', methods=['GET', 'POST'])
 def proxy(u):
     u = u if u.startswith('http') else 'https://' + u
-    u = u.replace('s:/', 's://', 1)  # uwsgi会将//传递为/
+    if u.rfind('://', 3, 9) == -1:
+        u = u.replace('s:/', 's://', 1)  # uwsgi会将//传递为/
     if not any([i.match(u) for i in [exp1, exp2, exp3, exp4, exp5]]):
         return Response('Invalid input.', status=403)
     if jsdelivr and exp2.match(u):
