@@ -18,6 +18,8 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 
 - python版本支持进行文件大小限制，超过设定返回原地址 [issue #8](https://github.com/hunshcn/gh-proxy/issues/8)
 
+- python版本支持特定user/repo 封禁/白名单 以及passby [issue #41](https://github.com/hunshcn/gh-proxy/issues/41)
+
 ## 使用
 
 直接在copy出来的url前加`https://gh.api.99988866.xyz/`即可

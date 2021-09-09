@@ -16,19 +16,36 @@ from urllib3.exceptions import (
 jsdelivr = 0
 cnpmjs = 0
 size_limit = 1024 * 1024 * 1024 * 999  # 允许的文件大小，默认999GB，相当于无限制了 https://github.com/hunshcn/gh-proxy/issues/8
+
+"""
+  先生效白名单再匹配黑名单，pass_list匹配到的会直接302到jsdelivr/cnpmjs而忽略设置
+  每个规则一行，可以封禁某个用户的所有仓库，也可以封禁某个用户的特定仓库，下方用黑名单示例，白名单同理
+  user1 # 封禁user1的所有仓库
+  user1/repo1 # 封禁user1的repo1
+  */repo1 # 封禁所有叫做repo1的仓库
+"""
+white_list = '''
+'''
+back_list = '''
+'''
+pass_list = '''
+'''
+
 HOST = '127.0.0.1'  # 监听地址，建议监听本地然后由web服务器反代
 PORT = 80  # 监听端口
 ASSET_URL = 'https://hunshcn.github.io/gh-proxy'  # 主页
 
+white_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in white_list.split('\n') if i]
+back_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in back_list.split('\n') if i]
 app = Flask(__name__)
 CHUNK_SIZE = 1024 * 10
 index_html = requests.get(ASSET_URL, timeout=10).text
 icon_r = requests.get(ASSET_URL + '/favicon.ico', timeout=10).content
-exp1 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:releases|archive)/.*$')
-exp2 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:blob)/.*$')
-exp3 = re.compile(r'^(?:https?://)?github\.com/.+?/.+?/(?:info|git-).*$')
-exp4 = re.compile(r'^(?:https?://)?raw\.githubusercontent\.com/.+?/.+?/.+?/.+$')
-exp5 = re.compile(r'^(?:https?://)?gist\.(?:githubusercontent|github)\.com/.+?/.+?/.+$')
+exp1 = re.compile(r'^(?:https?://)?github\.com/(?P<author>.+?)/(?P<repo>.+?)/(?:releases|archive)/.*$')
+exp2 = re.compile(r'^(?:https?://)?github\.com/(?P<author>.+?)/(?P<repo>.+?)/(?:blob|raw)/.*$')
+exp3 = re.compile(r'^(?:https?://)?github\.com/(?P<author>.+?)/(?P<repo>.+?)/(?:info|git-).*$')
+exp4 = re.compile(r'^(?:https?://)?raw\.(?:githubusercontent|github)\.com/(?P<author>.+?)/(?P<repo>.+?)/.+?/.+$')
+exp5 = re.compile(r'^(?:https?://)?gist\.(?:githubusercontent|github)\.com/(?P<author>.+?)/.+?/.+$')
 
 requests.sessions.default_headers = lambda: CaseInsensitiveDict()
 
@@ -92,15 +109,35 @@ def proxy(u):
     u = u if u.startswith('http') else 'https://' + u
     if u.rfind('://', 3, 9) == -1:
         u = u.replace('s:/', 's://', 1)  # uwsgi会将//传递为/
-    if not any([i.match(u) for i in [exp1, exp2, exp3, exp4, exp5]]):
+    pass_by = False
+    for exp in (exp1, exp2, exp3, exp4, exp5):
+        m = exp.match(u)
+        if m:
+            m = tuple(m.groups())
+            if white_list:
+                for i in white_list:
+                    if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
+                        break
+                else:
+                    return Response('Forbidden by white list.', status=403)
+            for i in back_list:
+                if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
+                    return Response('Forbidden by black list.', status=403)
+            for i in pass_list:
+                if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
+                    pass_by = True
+                    break
+            break
+    else:
         return Response('Invalid input.', status=403)
-    if jsdelivr and exp2.match(u):
+
+    if (jsdelivr or pass_by) and exp2.match(u):
         u = u.replace('/blob/', '@', 1).replace('github.com', 'cdn.jsdelivr.net/gh', 1)
         return redirect(u)
-    elif cnpmjs and exp3.match(u):
+    elif (cnpmjs or pass_by) and exp3.match(u):
         u = u.replace('github.com', 'github.com.cnpmjs.org', 1) + request.url.replace(request.base_url, '', 1)
         return redirect(u)
-    elif jsdelivr and exp4.match(u):
+    elif (jsdelivr or pass_by) and exp4.match(u):
         u = re.sub(r'(\.com/.*?/.+?)/(.+?/)', r'\1@\2', u, 1)
         u = u.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh', 1)
         return redirect(u)
@@ -133,5 +170,6 @@ def proxy(u):
     #     return Response('Illegal input', status=403, mimetype='text/html; charset=UTF-8')
 
 
+app.debug = True
 if __name__ == '__main__':
     app.run(host=HOST, port=PORT)
