@@ -19,6 +19,7 @@ size_limit = 1024 * 1024 * 1024 * 999  # 允许的文件大小，默认999GB，�
 
 """
   先生效白名单再匹配黑名单，pass_list匹配到的会直接302到jsdelivr/cnpmjs而忽略设置
+  生效顺序 白->黑->pass，可以前往https://github.com/hunshcn/gh-proxy/issues/41 查看示例
   每个规则一行，可以封禁某个用户的所有仓库，也可以封禁某个用户的特定仓库，下方用黑名单示例，白名单同理
   user1 # 封禁user1的所有仓库
   user1/repo1 # 封禁user1的repo1
@@ -26,7 +27,7 @@ size_limit = 1024 * 1024 * 1024 * 999  # 允许的文件大小，默认999GB，�
 """
 white_list = '''
 '''
-back_list = '''
+black_list = '''
 '''
 pass_list = '''
 '''
@@ -36,7 +37,7 @@ PORT = 80  # 监听端口
 ASSET_URL = 'https://hunshcn.github.io/gh-proxy'  # 主页
 
 white_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in white_list.split('\n') if i]
-back_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in back_list.split('\n') if i]
+black_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in black_list.split('\n') if i]
 app = Flask(__name__)
 CHUNK_SIZE = 1024 * 10
 index_html = requests.get(ASSET_URL, timeout=10).text
@@ -120,7 +121,7 @@ def proxy(u):
                         break
                 else:
                     return Response('Forbidden by white list.', status=403)
-            for i in back_list:
+            for i in black_list:
                 if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
                     return Response('Forbidden by black list.', status=403)
             for i in pass_list:
