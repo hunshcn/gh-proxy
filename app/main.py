@@ -140,7 +140,8 @@ def proxy(u):
         return redirect(u)
     elif (jsdelivr or pass_by) and exp4.match(u):
         u = re.sub(r'(\.com/.*?/.+?)/(.+?/)', r'\1@\2', u, 1)
-        u = u.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh', 1)
+        _u = u.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh', 1)
+        u = u.replace('raw.github.com', 'cdn.jsdelivr.net/gh', 1) if _u == u else _u
         return redirect(u)
     else:
         if exp2.match(u):

@@ -84,7 +84,7 @@ async function fetchHandler(e) {
         const newUrl = path.replace(/^(?:https?:\/\/)?github\.com/, 'https://github.com.cnpmjs.org')
         return Response.redirect(newUrl, 302)
     } else if (path.search(exp4) === 0) {
-        const newUrl = path.replace(/(?<=com\/.+?\/.+?)\/(.+?\/)/, '@$1').replace(/^(?:https?:\/\/)?raw\.githubusercontent\.com/, 'https://cdn.jsdelivr.net/gh')
+        const newUrl = path.replace(/(?<=com\/.+?\/.+?)\/(.+?\/)/, '@$1').replace(/^(?:https?:\/\/)?raw\.(?:githubusercontent|github)\.com/, 'https://cdn.jsdelivr.net/gh')
         return Response.redirect(newUrl, 302)
     } else {
         return fetch(ASSET_URL + path)
