@@ -70,15 +70,19 @@ async function fetchHandler(e) {
     const exp3 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-).*$/i
     const exp4 = /^(?:https?:\/\/)?raw\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+?\/.+$/i
     const exp5 = /^(?:https?:\/\/)?gist\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+$/i
-    if (path.search(exp1) === 0 || path.search(exp5) === 0 || !Config.cnpmjs && (path.search(exp3) === 0 || path.search(exp4) === 0)) {
-        return httpHandler(req, path)
+    const exp6 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/releases\/latest\/?$/i
+    if (path.search(exp6) === 0) {
+        return httpHandler(req, path, 'manual')
+    }
+    else if (path.search(exp1) === 0 || path.search(exp5) === 0 || !Config.cnpmjs && (path.search(exp3) === 0 || path.search(exp4) === 0)) {
+        return httpHandler(req, path, 'follow')
     } else if (path.search(exp2) === 0) {
         if (Config.jsdelivr){
             const newUrl = path.replace('/blob/', '@').replace(/^(?:https?:\/\/)?github\.com/, 'https://cdn.jsdelivr.net/gh')
             return Response.redirect(newUrl, 302)
         }else{
             path = path.replace('/blob/', '/raw/')
-            return httpHandler(req, path)
+            return httpHandler(req, path, 'follow')
         }
     } else if (path.search(exp3) === 0) {
         const newUrl = path.replace(/^(?:https?:\/\/)?github\.com/, 'https://github.com.cnpmjs.org')
@@ -95,8 +99,9 @@ async function fetchHandler(e) {
 /**
  * @param {Request} req
  * @param {string} pathname
+ * @param {string} redirtype
  */
-function httpHandler(req, pathname) {
+function httpHandler(req, pathname, redirtype) {
     const reqHdrRaw = req.headers
 
     // preflight
@@ -120,7 +125,7 @@ function httpHandler(req, pathname) {
     const reqInit = {
         method: req.method,
         headers: reqHdrNew,
-        redirect: 'follow',
+        redirect: redirtype,
         body: req.body
     }
     return proxy(urlObj, reqInit, rawLen, 0)
