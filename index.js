@@ -71,8 +71,12 @@ async function fetchHandler(e) {
     const exp4 = /^(?:https?:\/\/)?raw\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+?\/.+$/i
     const exp5 = /^(?:https?:\/\/)?gist\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+$/i
     const exp6 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/releases\/latest\/?$/i
+    const exp7 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/tags\/?$/i
     if (path.search(exp6) === 0) {
         return httpHandler(req, path, 'manual')
+    }
+    else if (path.search(exp7) === 0) {
+        return httpHandler(req, path, 'follow')
     }
     else if (path.search(exp1) === 0 || path.search(exp5) === 0 || !Config.cnpmjs && (path.search(exp3) === 0 || path.search(exp4) === 0)) {
         return httpHandler(req, path, 'follow')
