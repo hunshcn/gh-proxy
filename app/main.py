@@ -105,30 +105,36 @@ def iter_content(self, chunk_size=1, decode_unicode=False):
     return chunks
 
 
+def check_url(u):
+    for exp in (exp1, exp2, exp3, exp4, exp5):
+        m = exp.match(u)
+        if m:
+            return m
+    return False
+
+
 @app.route('/<path:u>', methods=['GET', 'POST'])
-def proxy(u):
+def handler(u):
     u = u if u.startswith('http') else 'https://' + u
     if u.rfind('://', 3, 9) == -1:
         u = u.replace('s:/', 's://', 1)  # uwsgi会将//传递为/
     pass_by = False
-    for exp in (exp1, exp2, exp3, exp4, exp5):
-        m = exp.match(u)
-        if m:
-            m = tuple(m.groups())
-            if white_list:
-                for i in white_list:
-                    if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
-                        break
-                else:
-                    return Response('Forbidden by white list.', status=403)
-            for i in black_list:
+    m = check_url(u)
+    if m:
+        m = tuple(m.groups())
+        if white_list:
+            for i in white_list:
                 if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
-                    return Response('Forbidden by black list.', status=403)
-            for i in pass_list:
-                if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
-                    pass_by = True
                     break
-            break
+            else:
+                return Response('Forbidden by white list.', status=403)
+        for i in black_list:
+            if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
+                return Response('Forbidden by black list.', status=403)
+        for i in pass_list:
+            if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
+                pass_by = True
+                break
     else:
         return Response('Invalid input.', status=403)
 
@@ -146,31 +152,39 @@ def proxy(u):
     else:
         if exp2.match(u):
             u = u.replace('/blob/', '/raw/', 1)
-        headers = {}
-        r_headers = dict(request.headers)
-        if 'Host' in r_headers:
-            r_headers.pop('Host')
-        try:
-            url = u + request.url.replace(request.base_url, '', 1)
-            if url.startswith('https:/') and not url.startswith('https://'):
-                url = 'https://' + url[7:]
-            r = requests.request(method=request.method, url=url, data=request.data, headers=r_headers, stream=True)
-            headers = dict(r.headers)
+        return proxy(u)
 
-            if 'Content-length' in r.headers and int(r.headers['Content-length']) > size_limit:
-                return redirect(u + request.url.replace(request.base_url, '', 1))
 
-            def generate():
-                for chunk in iter_content(r, chunk_size=CHUNK_SIZE):
-                    yield chunk
+def proxy(u, allow_redirects=False):
+    headers = {}
+    r_headers = dict(request.headers)
+    if 'Host' in r_headers:
+        r_headers.pop('Host')
+    try:
+        url = u + request.url.replace(request.base_url, '', 1)
+        if url.startswith('https:/') and not url.startswith('https://'):
+            url = 'https://' + url[7:]
+        r = requests.request(method=request.method, url=url, data=request.data, headers=r_headers, stream=True, allow_redirects=allow_redirects)
+        headers = dict(r.headers)
 
-            return Response(generate(), headers=headers, status=r.status_code)
-        except Exception as e:
-            headers['content-type'] = 'text/html; charset=UTF-8'
-            return Response('server error ' + str(e), status=500, headers=headers)
-    # else:
-    #     return Response('Illegal input', status=403, mimetype='text/html; charset=UTF-8')
+        if 'Content-length' in r.headers and int(r.headers['Content-length']) > size_limit:
+            return redirect(u + request.url.replace(request.base_url, '', 1))
 
+        def generate():
+            for chunk in iter_content(r, chunk_size=CHUNK_SIZE):
+                yield chunk
+
+        if 'Location' in r.headers:
+            _location = r.headers.get('Location')
+            if check_url(_location):
+                headers['Location'] = '/' + _location
+            else:
+                return proxy(_location, True)
+
+        return Response(generate(), headers=headers, status=r.status_code)
+    except Exception as e:
+        headers['content-type'] = 'text/html; charset=UTF-8'
+        return Response('server error ' + str(e), status=500, headers=headers)
 
 app.debug = True
 if __name__ == '__main__':

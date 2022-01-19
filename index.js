@@ -22,6 +22,13 @@ const PREFLIGHT_INIT = {
     }),
 }
 
+
+const exp1 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:releases|archive|suites)\/.*$/i
+const exp2 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:blob|raw)\/.*$/i
+const exp3 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-).*$/i
+const exp4 = /^(?:https?:\/\/)?raw\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+?\/.+$/i
+const exp5 = /^(?:https?:\/\/)?gist\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+$/i
+
 /**
  * @param {any} body
  * @param {number} status
@@ -52,6 +59,15 @@ addEventListener('fetch', e => {
 })
 
 
+function checkUrl(u) {
+    for (let i of [exp1, exp2, exp3, exp4, exp5, ]) {
+        if (u.search(i) === 0) {
+            return true
+        }
+    }
+    return false
+}
+
 /**
  * @param {FetchEvent} e
  */
@@ -65,18 +81,13 @@ async function fetchHandler(e) {
     }
     // cfworker 会把路径中的 `//` 合并成 `/`
     path = urlObj.href.substr(urlObj.origin.length + PREFIX.length).replace(/^https?:\/+/, 'https://')
-    const exp1 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:releases|archive|suites)\/.*$/i
-    const exp2 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:blob|raw)\/.*$/i
-    const exp3 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-).*$/i
-    const exp4 = /^(?:https?:\/\/)?raw\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+?\/.+$/i
-    const exp5 = /^(?:https?:\/\/)?gist\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+$/i
     if (path.search(exp1) === 0 || path.search(exp5) === 0 || !Config.cnpmjs && (path.search(exp3) === 0 || path.search(exp4) === 0)) {
         return httpHandler(req, path)
     } else if (path.search(exp2) === 0) {
-        if (Config.jsdelivr){
+        if (Config.jsdelivr) {
             const newUrl = path.replace('/blob/', '@').replace(/^(?:https?:\/\/)?github\.com/, 'https://cdn.jsdelivr.net/gh')
             return Response.redirect(newUrl, 302)
-        }else{
+        } else {
             path = path.replace('/blob/', '/raw/')
             return httpHandler(req, path)
         }
@@ -106,8 +117,6 @@ function httpHandler(req, pathname) {
         return new Response(null, PREFLIGHT_INIT)
     }
 
-    let rawLen = ''
-
     const reqHdrNew = new Headers(reqHdrRaw)
 
     let urlStr = pathname
@@ -120,10 +129,10 @@ function httpHandler(req, pathname) {
     const reqInit = {
         method: req.method,
         headers: reqHdrNew,
-        redirect: 'follow',
+        redirect: 'manual',
         body: req.body
     }
-    return proxy(urlObj, reqInit, rawLen, 0)
+    return proxy(urlObj, reqInit)
 }
 
 
@@ -132,24 +141,22 @@ function httpHandler(req, pathname) {
  * @param {URL} urlObj
  * @param {RequestInit} reqInit
  */
-async function proxy(urlObj, reqInit, rawLen) {
+async function proxy(urlObj, reqInit) {
     const res = await fetch(urlObj.href, reqInit)
     const resHdrOld = res.headers
     const resHdrNew = new Headers(resHdrOld)
 
-    // verify
-    if (rawLen) {
-        const newLen = resHdrOld.get('content-length') || ''
-        const badLen = (rawLen !== newLen)
+    const status = res.status
 
-        if (badLen) {
-            return makeRes(res.body, 400, {
-                '--error': `bad len: ${newLen}, except: ${rawLen}`,
-                'access-control-expose-headers': '--error',
-            })
+    if (resHdrNew.has('location')) {
+        let _location = resHdrNew.get('location')
+        if (checkUrl(_location))
+            resHdrNew.set('location', PREFIX + _location)
+        else {
+            reqInit.redirect = 'follow'
+            return proxy(newUrl(_location), reqInit)
         }
     }
-    const status = res.status
     resHdrNew.set('access-control-expose-headers', '*')
     resHdrNew.set('access-control-allow-origin', '*')
 
