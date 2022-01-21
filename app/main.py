@@ -38,6 +38,7 @@ ASSET_URL = 'https://hunshcn.github.io/gh-proxy'  # 主页
 
 white_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in white_list.split('\n') if i]
 black_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in black_list.split('\n') if i]
+pass_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in pass_list.split('\n') if i]
 app = Flask(__name__)
 CHUNK_SIZE = 1024 * 10
 index_html = requests.get(ASSET_URL, timeout=10).text
@@ -152,6 +153,11 @@ def handler(u):
     else:
         if exp2.match(u):
             u = u.replace('/blob/', '/raw/', 1)
+        if pass_by:
+            url = u + request.url.replace(request.base_url, '', 1)
+            if url.startswith('https:/') and not url.startswith('https://'):
+                url = 'https://' + url[7:]
+            return redirect(url)
         return proxy(u)
 
 
