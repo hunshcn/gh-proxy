@@ -50,7 +50,7 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 
 复制 [index.js](https://cdn.jsdelivr.net/hunshcn/gh-proxy@master/index.js)  到左侧代码框，`Save and deploy`。如果正常，右侧应显示首页。
 
-`index.js`默认配置下clone走github.com.cnpmjs.org，项目文件会走jsDeliver，如需走worker，修改Config变量即可
+`index.js`默认配置下项目文件会走jsDeliver，如需走worker，修改Config变量即可
 
 `ASSET_URL`是静态资源的url（实际上就是现在显示出来的那个输入框单页面）
 
@@ -81,7 +81,7 @@ docker run -d --name="gh-proxy-py" \
 
 python版本的机器如果无法正常访问github.io会启动报错，请自行修改静态文件url
 
-workers版本默认配置下clone走github.com.cnpmjs.org，项目文件会走jsDeliver，如需走服务器，修改配置即可
+workers版本默认配置下项目文件会走jsDeliver，_如需走服务器_，修改配置即可
 
 python版本默认走服务器（2021.3.27更新）
 
