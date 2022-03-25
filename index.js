@@ -25,7 +25,7 @@ const PREFLIGHT_INIT = {
 const exp1 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:releases|archive)\/.*$/i
 const exp2 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:blob|raw)\/.*$/i
 const exp3 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/(?:info|git-).*$/i
-const exp4 = /^(?:https?:\/\/)?raw\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+?\/.+$/i
+const exp4 = /^(?:https?:\/\/)?raw\.(?:githubusercontent|githubusercontents|github)\.com\/.+?\/.+?\/.+?\/.+$/i
 const exp5 = /^(?:https?:\/\/)?gist\.(?:githubusercontent|github)\.com\/.+?\/.+?\/.+$/i
 const exp6 = /^(?:https?:\/\/)?github\.com\/.+?\/.+?\/tags.*$/i
 
@@ -92,7 +92,7 @@ async function fetchHandler(e) {
             return httpHandler(req, path)
         }
     } else if (path.search(exp4) === 0) {
-        const newUrl = path.replace(/(?<=com\/.+?\/.+?)\/(.+?\/)/, '@$1').replace(/^(?:https?:\/\/)?raw\.(?:githubusercontent|github)\.com/, 'https://cdn.jsdelivr.net/gh')
+        const newUrl = path.replace(/(?<=com\/.+?\/.+?)\/(.+?\/)/, '@$1').replace(/^(?:https?:\/\/)?raw\.(?:githubusercontent|githubusercontents|github)\.com/, 'https://cdn.jsdelivr.net/gh')
         return Response.redirect(newUrl, 302)
     } else {
         return fetch(ASSET_URL + path)
