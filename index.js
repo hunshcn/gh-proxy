@@ -6,9 +6,9 @@
 const ASSET_URL = 'https://hunshcn.github.io/gh-proxy/'
 // 前缀，如果自定义路由为example.com/gh/*，将PREFIX改为 '/gh/'，注意，少一个杠都会错！
 const PREFIX = '/'
-// 分支文件使用jsDelivr镜像的开关，0为关闭，默认开启
+// 分支文件使用jsDelivr镜像的开关，0为关闭，默认关闭
 const Config = {
-    jsdelivr: 1
+    jsdelivr: 0
 }
 
 /** @type {RequestInit} */
