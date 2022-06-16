@@ -52,7 +52,7 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 
 `index.js`默认配置下项目文件会走jsDelivr，如需走worker，修改Config变量即可
 
-`ASSET_URL`是静态资源的url（实际上就是现在显示出来的那个输入框单页面）
+`ASSET_URL`是静态资源的url，即现在显示出来的那个输入框单页面；可在fork后启用仓库pages服务（定位至docs目录）自行定制
 
 `PREFIX`是前缀，默认（根路径情况为"/"），如果自定义路由为example.com/gh/*，请将PREFIX改为 '/gh/'，注意，少一个杠都会错！
 
