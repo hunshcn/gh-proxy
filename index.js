@@ -11,6 +11,8 @@ const Config = {
     jsdelivr: 0
 }
 
+const whiteList = [] // 白名单，路径里面有包含字符的才会通过，e.g. ['/username/']
+
 /** @type {RequestInit} */
 const PREFLIGHT_INIT = {
     status: 204,
@@ -117,6 +119,16 @@ function httpHandler(req, pathname) {
     const reqHdrNew = new Headers(reqHdrRaw)
 
     let urlStr = pathname
+    let flag = false
+    for (let i of whiteList) {
+        if (urlStr.includes(i)) {
+            flag = true
+            break
+        }
+    }
+    if (!flag) {
+        return new Response("blocked", {status: 403})
+    }
     if (urlStr.startsWith('github')) {
         urlStr = 'https://' + urlStr
     }
