@@ -119,7 +119,7 @@ function httpHandler(req, pathname) {
     const reqHdrNew = new Headers(reqHdrRaw)
 
     let urlStr = pathname
-    let flag = Boolean(whiteList.length)
+    let flag = !Boolean(whiteList.length)
     for (let i of whiteList) {
         if (urlStr.includes(i)) {
             flag = true
