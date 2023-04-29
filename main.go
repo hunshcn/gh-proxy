@@ -27,6 +27,10 @@ type Server struct {
 	enableLog bool
 }
 
+func buildHostPath(u *url.URL) string {
+	return "/" + u.Scheme + "://" + u.Host
+}
+
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	targetUrl := r.URL.RequestURI()
 	targetUrl = targetUrl[1:]
@@ -37,9 +41,6 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	r.Host = target.Host
 	r.URL = target
-	r.URL.Host = target.Host
-	r.URL.Path = target.Path
-	r.URL.RawPath = target.RawPath
 	mw := &MWriter{Next: s.proxy.ServeHTTP, EnableLog: s.enableLog}
 
 	if strings.HasSuffix(targetUrl[:strings.LastIndexByte(targetUrl, '/')], "/info/lfs/objects") {
@@ -111,7 +112,15 @@ func (mw *MWriter) Write(data []byte) (int, error) {
 
 func (mw *MWriter) WriteHeader(statusCode int) {
 	for i := range mw.Header()["Location"] {
-		mw.Header()["Location"][i] = HostPrefix + mw.Header()["Location"][0]
+		location := mw.Header()["Location"][i]
+		if locationUrl, _ := url.Parse(location); locationUrl != nil && locationUrl.Scheme != "" {
+			location = "/" + location
+		} else if location[0] == '/' {
+			location = buildHostPath(mw.request.URL) + location
+		} else if mw.request.URL.Path == "" { // fix relative path redirect rule
+			location = buildHostPath(mw.request.URL) + "/" + location
+		}
+		mw.Header()["Location"][i] = location
 	}
 	mw.Log()
 	if mw.ReplaceFunc == nil {
