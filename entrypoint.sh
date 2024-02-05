@@ -17,6 +17,9 @@ else
     content_server=$content_server'    location @app {\n'
     content_server=$content_server'        include uwsgi_params;\n'
     content_server=$content_server'        uwsgi_pass unix:///tmp/uwsgi.sock;\n'
+    content_server=$content_server'        uwsgi_buffer_size 256k;\n'
+    content_server=$content_server'        uwsgi_buffers 32 512k;\n'
+    content_server=$content_server'        uwsgi_busy_buffers_size 512k;\n'
     content_server=$content_server'    }\n'
     content_server=$content_server'}\n'
     # Save generated server /etc/nginx/conf.d/nginx.conf
