@@ -10,6 +10,7 @@ from requests.utils import (
     stream_decode_response_unicode, iter_slices, CaseInsensitiveDict)
 from urllib3.exceptions import (
     DecodeError, ReadTimeoutError, ProtocolError)
+from urllib.parse import quote
 
 # config
 # 分支文件使用jsDelivr镜像的开关，0为关闭，默认关闭
@@ -154,6 +155,7 @@ def handler(u):
             if url.startswith('https:/') and not url.startswith('https://'):
                 url = 'https://' + url[7:]
             return redirect(url)
+        u = quote(u, safe='/:')
         return proxy(u)
 
 
