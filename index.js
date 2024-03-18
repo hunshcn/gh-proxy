@@ -129,7 +129,7 @@ function httpHandler(req, pathname) {
     if (!flag) {
         return new Response("blocked", {status: 403})
     }
-    if (urlStr.startsWith('github') || urlStr.startsWith('raw.github') || urlStr.startsWith('gist.github')) {
+    if (urlStr.search(/^https?:\/\//) !== 0) {
         urlStr = 'https://' + urlStr
     }
     const urlObj = newUrl(urlStr)
