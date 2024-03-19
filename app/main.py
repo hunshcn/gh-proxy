@@ -164,22 +164,27 @@ def proxy(u, allow_redirects=False):
     r_headers = dict(request.headers)
     if 'Host' in r_headers:
         r_headers.pop('Host')
+    if 'Transfer-Encoding' in r_headers:
+        r_headers.pop('Transfer-Encoding')  # 确保请求头中不包含Transfer-Encoding
+
     try:
         url = u + request.url.replace(request.base_url, '', 1)
         if url.startswith('https:/') and not url.startswith('https://'):
             url = 'https://' + url[7:]
         r = requests.request(method=request.method, url=url, data=request.data, headers=r_headers, stream=True, allow_redirects=allow_redirects)
-        headers = dict(r.headers)
-
-        if 'Content-length' in r.headers and int(r.headers['Content-length']) > size_limit:
+        
+        # 创建一个新的响应头字典，去除Transfer-Encoding
+        headers = {k: v for k, v in r.headers.items() if k.lower() != 'transfer-encoding'}
+        
+        if 'Content-length' in headers and int(headers['Content-length']) > size_limit:
             return redirect(u + request.url.replace(request.base_url, '', 1))
 
         def generate():
             for chunk in iter_content(r, chunk_size=CHUNK_SIZE):
                 yield chunk
 
-        if 'Location' in r.headers:
-            _location = r.headers.get('Location')
+        if 'Location' in headers:
+            _location = headers.get('Location')
             if check_url(_location):
                 headers['Location'] = '/' + _location
             else:
