@@ -58,6 +58,10 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 
 `PREFIX`是前缀，默认（根路径情况为"/"），如果自定义路由为example.com/gh/*，请将PREFIX改为 '/gh/'，注意，少一个杠都会错！
 
+由于 `cloudflare`的所有 `workers.dev`的子域名已经全部被污染，在无其他科学工具的辅助下均无法访问，因此需要额外进行绑定自有域名操作，[相关issue](https://github.com/hunshcn/gh-proxy/issues/72)，[相关配置教程](https://vircloud.net/exp/cf-worker-domain.html)
+
+
+
 ## Python版本部署
 
 ### Docker部署
@@ -80,6 +84,7 @@ docker run -d --name="gh-proxy-py" \
 按需求修改`app/main.py`的前几项配置
 
 *注意:* 可能需要在`return Response`前加两行
+
 ```python3
 if 'Transfer-Encoding' in headers:
     headers.pop('Transfer-Encoding')
