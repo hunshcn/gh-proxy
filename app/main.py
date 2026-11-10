@@ -169,7 +169,9 @@ def proxy(u, allow_redirects=False):
         if url.startswith('https:/') and not url.startswith('https://'):
             url = 'https://' + url[7:]
         r = requests.request(method=request.method, url=url, data=request.data, headers=r_headers, stream=True, allow_redirects=allow_redirects)
-        headers = dict(r.headers)
+        headers = CaseInsensitiveDict(r.headers)
+        # urllib3 removes chunk framing; the WSGI server owns downstream framing.
+        headers.pop('Transfer-Encoding', None)
 
         if 'Content-length' in r.headers and int(r.headers['Content-length']) > size_limit:
             return redirect(u + request.url.replace(request.base_url, '', 1))
