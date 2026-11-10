@@ -79,10 +79,10 @@ docker run -d --name="gh-proxy-py" \
 
 按需求修改`app/main.py`的前几项配置
 
-*注意:* 可能需要在`return Response`前加两行
-```python3
-if 'Transfer-Encoding' in headers:
-    headers.pop('Transfer-Encoding')
+运行代理响应回归测试（无需访问外网）：
+
+```sh
+python -m unittest discover -s tests -v
 ```
 
 ### 注意
